@@ -1,0 +1,2 @@
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QReplication report of “Productivity Shocks, Long-Term Contracts and Earning Dynamics” by Balke & Lamadon (2022) Bruno Esposito November 2023\\E$"}
+{"rule":"COMMA_COMPOUND_SENTENCE_2","sentence":"^\\QThe code provided by Balke and Lamadon is well organized and their documentation is quite clear.\\E$"}

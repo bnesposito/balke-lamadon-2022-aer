@@ -1,0 +1,32 @@
+\begin{thebibliography}{}
+
+\bibitem [\protect \citeauthoryear {%
+Balke%
+\ \BBA {} Lamadon%
+}{%
+Balke%
+\ \BBA {} Lamadon%
+}{%
+{\protect \APACyear {2022}}%
+}]{%
+balke2022productivity}
+\APACinsertmetastar {%
+balke2022productivity}%
+\begin{APACrefauthors}%
+Balke, N.%
+\BCBT {}\ \BBA {} Lamadon, T.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2022}{July}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Productivity Shocks, Long-Term Contracts, and Earnings Dynamics} {Productivity shocks, long-term contracts, and earnings dynamics}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{American Economic Review}{112}{7}{2139-77}.
+\newblock
+\begin{APACrefURL} \url{https://www.aeaweb.org/articles?id=10.1257/aer.20161622} \end{APACrefURL}
+\newblock
+\begin{APACrefDOI} \doi{10.1257/aer.20161622} \end{APACrefDOI}
+\PrintBackRefs{\CurrentBib}
+
+\end{thebibliography}

@@ -155,6 +155,7 @@ class JobSearch:
         self.e0 = -np.power(-self.x[0]/self.x[1], 1/self.x[2]) + self.e_asy
         self.re_cst = 0
         self.re_cst = -self.re(self.e0)
+        print(self.x)
 
         assert self.e_asy>self.e0, "asymptote point is not larger than 0 crossing"
         assert (self.x[1]<0) & (self.x[2]<0), "parameter of the functional form are decreasing"

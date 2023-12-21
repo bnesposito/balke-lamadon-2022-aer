@@ -5,6 +5,11 @@
 import numpy as np
 import logging
 import json
+import jax.numpy as jnp
+from jax import jit
+from jax.tree_util import register_pytree_node
+
+from jax.tree_util import register_pytree_node
 
 
 class Parameters:
@@ -13,96 +18,97 @@ class Parameters:
         Class whose objects store the parameters used in the model.
     """
 
-    def __init__(self, overwrite={}):
+    def __init__(self, params):
         """
             We can either initialize the object using a pre-defined set of parameters, or pass in a user-defined set
              of parameters.
             :param model_input: Dict or None
         """
+        self.__dict__.update(params)
 
-        # Points in the Model
-        self.num_l  = 101     # Number of points of evaluation
-        self.num_v  = 200     # Number of points in the grid for V
-        self.num_x  = 15      # Number of points of support for worker productivity
-        self.num_np = 5       # Number of non-permanent levels
-        self.num_z  = 7       # Number of points for match productivity
-        self.num_s  = 50      # Number of points of support for piece rate contract
+        # # Points in the Model
+        # self.num_l  = 101     # Number of points of evaluation
+        # self.num_v  = 200     # Number of points in the grid for V
+        # self.num_x  = 15      # Number of points of support for worker productivity
+        # self.num_np = 5       # Number of non-permanent levels
+        # self.num_z  = 7       # Number of points for match productivity
+        # self.num_s  = 50      # Number of points of support for piece rate contract
 
-        # Time periods in the Model
-        self.dt     = 0.25    # Time as a Fraction of Year
+        # # Time periods in the Model
+        # self.dt     = 0.25    # Time as a Fraction of Year
 
-        # Utility Function Parameters
-        self.u_rho = 1.5       # Risk aversion coefficient
-        self.u_a   = 1.0
-        self.u_b   = 1.0
+        # # Utility Function Parameters
+        # self.u_rho = 1.5       # Risk aversion coefficient
+        # self.u_a   = 1.0
+        # self.u_b   = 1.0
 
-        # Search Environment
-        self.z_0      = 4          # Slice of value function of firms (index starts at 1)
-        self.s_job    = 1.0        # Relative Efficiency of Search on the Job
-        self.alpha    = 0.1        # Parameter for probability of finding a job
-        self.sigma    = 1.0        # Parameter for probability of finding a job
-        self.kappa    = 1.0        # Vacancy cost parameter
+        # # Search Environment
+        # self.z_0      = 4          # Slice of value function of firms (index starts at 1)
+        # self.s_job    = 1.0        # Relative Efficiency of Search on the Job
+        # self.alpha    = 0.1        # Parameter for probability of finding a job
+        # self.sigma    = 1.0        # Parameter for probability of finding a job
+        # self.kappa    = 1.0        # Vacancy cost parameter
 
-        # effort function that control separation
-        self.efcost_sep = 0.005 * self.dt
-        self.efcost_ce  = 0.3
+        # # effort function that control separation
+        # self.efcost_sep = 0.005 * self.dt
+        # self.efcost_ce  = 0.3
 
-        # Productivity shocks
-        self.x_corr = 0.95  # Correlation in worker productivity
-        self.z_corr = 0.95  # Correlation in match productivity
+        # # Productivity shocks
+        # self.x_corr = 0.95  # Correlation in worker productivity
+        # self.z_corr = 0.95  # Correlation in match productivity
 
-        # Productivity Function Parameters
-        self.prod_var_x  = 1.0           # Variance of X (permanent)
-        self.prod_var_x2 = 1.0           # Variance of X (non-permanent)
-        self.prod_var_z  = 1.0           # Variance of Z
-        self.prod_z      = 0.5           # Production function parameter
-        self.prod_rho    = 1.0           # Production function parameter
-        self.prod_mu     = 0.2           # Worker contribution
-        self.prod_px     = 1.0           # Worker power (non linear in type)
-        self.prod_py     = 1.0           # Firm power (nonlinear in type)
-        self.prod_a      = 16 * self.dt  # Factor for output function
-        self.prod_err_w  = 0.0           # Measurement error on wages
-        self.prod_err_y  = 0.0           # Measurement error on wages
+        # # Productivity Function Parameters
+        # self.prod_var_x  = 1.0           # Variance of X (permanent)
+        # self.prod_var_x2 = 1.0           # Variance of X (non-permanent)
+        # self.prod_var_z  = 1.0           # Variance of Z
+        # self.prod_z      = 0.5           # Production function parameter
+        # self.prod_rho    = 1.0           # Production function parameter
+        # self.prod_mu     = 0.2           # Worker contribution
+        # self.prod_px     = 1.0           # Worker power (non linear in type)
+        # self.prod_py     = 1.0           # Firm power (nonlinear in type)
+        # self.prod_a      = 16 * self.dt  # Factor for output function
+        # self.prod_err_w  = 0.0           # Measurement error on wages
+        # self.prod_err_y  = 0.0           # Measurement error on wages
 
-        # Discounting Rates
-        self.beta     = 1 - (1 - 0.95) * self.dt  # Impatience
-        self.int_rate = 1 / self.beta - 1         # Period interest rate
+        # # Discounting Rates
+        # self.beta     = 1 - (1 - 0.95) * self.dt  # Impatience
+        # self.int_rate = 1 / self.beta - 1         # Period interest rate
 
-        # Unemployment Parameters
-        self.u_bf_m = 0.05       # Intercept of benefit function for unemployed(x)
-        self.u_bf_c = 0.5        # Slope of benefit function for unemployed(x) not used
+        # # Unemployment Parameters
+        # self.u_bf_m = 0.05       # Intercept of benefit function for unemployed(x)
+        # self.u_bf_c = 0.5        # Slope of benefit function for unemployed(x) not used
 
-        # Unemployment Parameters w_net = tau * w ^ lambda
-        self.tax_lambda = 1.0       # curvature of the tax system 
-        self.tax_tau    = 1.0       # proportion of take home
-        self.tax_expost_lambda = 1.0  # this is for counterfactuals, allows to only apply taxes expost
-        self.tax_expost_tau = 1.0     # this is for counterfactuals, allows to only apply taxes expost
+        # # Unemployment Parameters w_net = tau * w ^ lambda
+        # self.tax_lambda = 1.0       # curvature of the tax system 
+        # self.tax_tau    = 1.0       # proportion of take home
+        # self.tax_expost_lambda = 1.0  # this is for counterfactuals, allows to only apply taxes expost
+        # self.tax_expost_tau = 1.0     # this is for counterfactuals, allows to only apply taxes expost
 
-        # Computational Parameters
-        self.chain            = 1         # Chain id when running in parallel
-        self.max_iter         = 5000
-        self.max_iter_fb      = 5000
-        self.verbose          = 5
-        self.iter_display     = 25
-        self.tol_simple_model = 1e-9
-        self.tol_full_model   = 1e-8
-        self.eq_relax_power   = 0.4       #  we relax the equilibrium constrain using an update rule based
-        self.eq_relax_margin  = 500       #  on mumber of iterations
-        self.eq_weighting_at0 = 0.01      # fitting J function with weight around 0
+        # # Computational Parameters
+        # self.chain            = 1         # Chain id when running in parallel
+        # self.max_iter         = 5000
+        # self.max_iter_fb      = 5000
+        # self.verbose          = 5
+        # self.iter_display     = 25
+        # self.tol_simple_model = 1e-9
+        # self.tol_full_model   = 1e-8
+        # self.eq_relax_power   = 0.4       #  we relax the equilibrium constrain using an update rule based
+        # self.eq_relax_margin  = 500       #  on mumber of iterations
+        # self.eq_weighting_at0 = 0.01      # fitting J function with weight around 0
 
-        # simulation parameters
-        self.sim_ni      = 20000  # number of workers
-        self.sim_nt      = 30     # time periods on top of nt_burn
-        self.sim_nt_burn = 10     # periods to discard at begining
-        self.sim_nh      = 200    # length of the firm history
-        self.sim_nrep    = 20     # number of replication samples
-        self.sim_net_earnings = False # whether to use net or gross earnings in the simulation
+        # # simulation parameters
+        # self.sim_ni      = 20000  # number of workers
+        # self.sim_nt      = 30     # time periods on top of nt_burn
+        # self.sim_nt_burn = 10     # periods to discard at begining
+        # self.sim_nh      = 200    # length of the firm history
+        # self.sim_nrep    = 20     # number of replication samples
+        # self.sim_net_earnings = False # whether to use net or gross earnings in the simulation
 
-        for key, val in overwrite.items():
-            if key in self.__dict__.keys():
-                self.__dict__[key] = val
-            else:
-                logging.warning("this key does not exists:" + key)
+        # for key, val in params.items():
+        #     if key in self.__dict__.keys():
+        #         self.__dict__[key] = val
+        #     else:
+        #         logging.warning("this key does not exists:" + key)
 
     @staticmethod
     def load(filename) -> 'Parameters':
@@ -138,6 +144,10 @@ class Parameters:
         x0 = np.kron(x0,np.ones(self.num_np)) # permanent is slow moving
         xt = np.kron(np.ones(num_x0),xt) # permanent is slow moving
         return x0,xt
+    
+    @property
+    def dtype(self):
+        return jnp.float32
 
 class Preferences:
 
@@ -252,3 +262,45 @@ class Preferences:
             Returns the log profit equivalent associated with the firm present value
         """
         return(( (1-self.p.beta) * J))
+
+
+class RegisteredParameters(Parameters):
+    def __repr__(self):
+        return "Parameters object"
+
+def parameters_flatten(v):
+    """Specifies a flattening recipe.
+
+    Params:
+        v: the value of registered type to flatten.
+    Returns:
+        a pair of an iterable with the children to be flattened recursively,
+        and some opaque auxiliary data to pass back to the unflattening recipe.
+        The auxiliary data is stored in the treedef for use during unflattening.
+        The auxiliary data could be used, e.g., for dictionary keys.
+    """
+    children = tuple(v.__dict__.values())
+    aux_data = tuple(v.__dict__.keys())
+    return (children, aux_data)
+
+def parameters_unflatten(aux_data, children):
+    """Specifies an unflattening recipe.
+
+    Params:
+        aux_data: the opaque data that was specified during flattening of the
+        current treedef.
+        children: the unflattened children
+
+    Returns:
+        a re-constructed object of the registered type, using the specified
+        children and auxiliary data.
+    """
+    params = dict(zip(aux_data, children))
+    return RegisteredParameters(params)
+
+# Global registration
+register_pytree_node(
+    RegisteredParameters,
+    parameters_flatten,    # tell JAX what are the children nodes
+    parameters_unflatten   # tell JAX how to pack back into a RegisteredSpecial
+)
